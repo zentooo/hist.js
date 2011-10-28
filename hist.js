@@ -3,7 +3,6 @@
  */
 
 (function() {
-
     var hist = {},
         currentLocation = location.href,
         currentHash = location.hash || "",
@@ -78,6 +77,8 @@
             ajax(url, function(data, xhr) {
                 var ok = config.success(data, xhr);
 
+                console.log("url = " + url);
+
                 loading = false;
 
                 if ( ok && hasPushState && ! isPopState ) {
@@ -92,7 +93,7 @@
                 if ( typeof config.error === "function" ) {
                     config.error(xhr);
                 }
-            }, config.headers || {});
+            }, config.headers || { "X-Hist-XMLHttpRequest": 1 });
         }
     }
 
@@ -119,10 +120,10 @@
         xhr.setRequestHeader("If-Modified-Since", "Thu, 01 Jun 1970 00:00:00 GMT");
 
         for ( key in headers ) {
-            xhr.setRequestHeader(key, header[key]);
+            xhr.setRequestHeader(key, headers[key]);
         }
 
-        xhr.send(data);
+        xhr.send();
     }
 
     function onPopState(evt) {
@@ -138,12 +139,15 @@
         loadPage(asNormalUrl(location.hash));
     }
 
+    if ( window.hist ) {
+        configure(window.hist);
+    }
 
     if ( config.redirect ) {
         if ( hasPushState && isHashUrl() ) {
             // new browsers which has history.pushState + hash URL
             // redirect to normal URL
-            location.href = asNormalUrl(hash);
+            location.href = asNormalUrl(location.hash);
         }
         else if ( ! hasPushState && ! isHashUrl() ) {
             // old browsers not have history.pushState + normal URL
