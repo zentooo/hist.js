@@ -1,5 +1,5 @@
 /**
- * @fileoverview
+ * @fileoverview Ajax history management heloper handling various environments (with pushState / with onhashchange / without both of them)
  */
 
 (function() {
@@ -12,10 +12,25 @@
         config = {};
 
     var HASH_POLLING_INTERVAL = 400,
+        BASE_URL = location.protocol + "//" + location.host + "/",
         PAGE_KEY = "page";
+
 
     function configure(c) {
         config = c;
+
+        if ( config.redirect ) {
+            if ( hasPushState && isHashUrl() ) {
+                // new browsers which has history.pushState + hash URL
+                // redirect to normal URL
+                location.href = asNormalUrl(location.hash);
+            }
+            else if ( ! hasPushState && ! isHashUrl() ) {
+                // old browsers not have history.pushState + normal URL
+                // redirect to hash URL
+                location.href = asHashUrl(location.href);
+            }
+        }
     }
 
     function isSSL(url) {
@@ -38,14 +53,14 @@
     }
 
     function asHashUrl(url) {
-        var hrefWithoutHash = location.href.split("#")[0],
+        var baseUrl = config.baseUrl || BASE_URL,
             pageKey = config.pageKey || PAGE_KEY;
 
         if ( url.indexOf("http") === 0 ) {
-            return hrefWithoutHash + "#" + pageKey + "=" + url.split("/").slice(3).join("/");
+            return baseUrl + "#" + pageKey + "=" + url.split("/").slice(3).join("/");
         }
         else {
-            return hrefWithoutHash + "#" + pageKey + "=" + url;
+            return baseUrl + "#" + pageKey + "=" + url;
         }
     }
 
@@ -77,12 +92,9 @@
             ajax(url, function(data, xhr) {
                 var ok = config.success(data, xhr);
 
-                console.log("url = " + url);
-
                 loading = false;
 
                 if ( ok && hasPushState && ! isPopState ) {
-                    console.log("history pushed: " + url);
                     window.history.pushState(null, "", url);
                     currentLocation = url;
                 }
@@ -130,8 +142,6 @@
         if ( currentLocation !== location.href ) {
             loadPage(location.href, true);
             currentLocation = location.href;
-
-            console.log("popstate transition to: " + location.href);
         }
     }
 
@@ -143,25 +153,12 @@
         configure(window.hist);
     }
 
-    if ( config.redirect ) {
-        if ( hasPushState && isHashUrl() ) {
-            // new browsers which has history.pushState + hash URL
-            // redirect to normal URL
-            location.href = asNormalUrl(location.hash);
-        }
-        else if ( ! hasPushState && ! isHashUrl() ) {
-            // old browsers not have history.pushState + normal URL
-            // redirect to hash URL
-            location.href = asHashUrl(location.href);
-        }
-    }
-
     if ( hasPushState ) {
         window.addEventListener("popstate", onPopState, false);
     }
     else {
         // if start with hash url
-        if ( location.hash.indexOf("#") !== -1 ) {
+        if ( location.hash.indexOf("#" + (config.pageKey || PAGE_KEY)  + "=") !== -1 ) {
             onHashChange();
         }
 

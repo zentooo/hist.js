@@ -6,18 +6,19 @@ use Plack::Builder;
 use JSON;
 
 
-my $i = 0;
-
 get '/' => sub {
     my ($c) = @_;
-    $c->render("index.tt");
+    $c->render("index.tt", +{
+        n => 1
+    });
 };
 
 get '/:path' => sub {
     my ($c, $p) = @_;
 
+    $p->{n} = $p->{path} + 1;
+
     if ( $c->req->header("x-hist-xmlhttprequest") == 1 ) {
-        $p->{n} = ++$i;
         $c->render("partial.tt", $p);
     }
     else {
@@ -45,24 +46,29 @@ __DATA__
         }
     </style>
     <script type="text/javascript">
-        var hist = {
-            redirect: true,
-            success: function(data) {
-                document.getElementById("content").innerHTML = data;
-                return true;
-            }
-        };
-    </script>
-    <script type="text/javascript" src="hist.js"></script>
-    <script type="text/javascript">
-        //hist.configure({
-        //});
+        //var hist = {
+        //    redirect: true,
+        //    success: function(data) {
+        //        document.getElementById("content").innerHTML = data;
+        //        return true;
+        //    }
+        //};
     </script>
 </head>
 <body>
 <div id="content">
 <a onclick="hist.next('[% n %]')">to [% n %]</a>
 </div>
+    <script type="text/javascript" src="hist.js"></script>
+    <script type="text/javascript">
+        hist.configure({
+            redirect: true,
+            success: function(data) {
+                document.getElementById("content").innerHTML = data;
+                return true;
+            }
+        });
+    </script>
 </body>
 </html>
 
