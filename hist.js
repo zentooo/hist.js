@@ -13,6 +13,7 @@
 
     var hashPollingInterval = 400,
         baseUrl = location.protocol + "//" + location.host + "/",
+        headers  = { "X-Hist-XMLHttpRequest": 1 },
         pageKey = "page",
         shebang = "#";
 
@@ -22,6 +23,7 @@
 
         hashPollingInterval = c.hashPollingInterval || hashPollingInterval;
         baseUrl = c.baseUrl || baseUrl;
+        headers = c.headers || headers;
         pageKey = c.pageKey || pageKey;
         shebang = c.withBang ? "#!" : "#";
 
@@ -156,7 +158,7 @@
                 if ( typeof config.error === "function" ) {
                     config.error(xhr);
                 }
-            }, config.headers || { "X-Hist-XMLHttpRequest": 1 });
+            }, headers);
         }
     }
 
