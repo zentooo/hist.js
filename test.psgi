@@ -8,21 +8,28 @@ use JSON;
 
 get '/' => sub {
     my ($c) = @_;
-    $c->render("index.tt", +{
-        n => 1
-    });
+
+    my $param = +{
+        n => 1,
+        base => $c->req->base
+    };
+
+    $c->render("index.tt", $param);
 };
 
 get '/:path' => sub {
     my ($c, $p) = @_;
 
-    $p->{n} = $p->{path} + 1;
+    my $param = +{
+        n => $p->{path} + 1,
+        base => $c->req->base
+    };
 
     if ( $c->req->header("x-hist-xmlhttprequest") == 1 ) {
-        $c->render("partial.tt", $p);
+        $c->render("partial.tt", $param);
     }
     else {
-        $c->render("index.tt", $p);
+        $c->render("index.tt", $param);
     }
 };
 
@@ -56,13 +63,18 @@ __DATA__
     </script>
 </head>
 <body>
-<div id="content">
-<a onclick="hist.next('[% n %]')">to [% n %]</a>
-</div>
+    <div id="content">
+        <a onclick="hist.next('[% n %]')">to [% n %]</a>
+        <br />
+        <br />
+        <a onclick="hist.next('[% base %][% n %]')">to [% n %] (absolute)</a>
+    </div>
     <script type="text/javascript" src="hist.js"></script>
     <script type="text/javascript">
         hist.configure({
             redirect: true,
+            //withOutKey: true,
+            withBang: true,
             success: function(data) {
                 document.getElementById("content").innerHTML = data;
                 return true;
@@ -73,4 +85,7 @@ __DATA__
 </html>
 
 @@ partial.tt
-<a onclick="hist.next('[% n %]')">to [% n %]</a>
+<a onclick="hist.next('[% n %]')">to [% n %] (relative)</a>
+<br />
+<br />
+<a onclick="hist.next('[% base %][% n %]')">to [% n %] (absolute)</a>

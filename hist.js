@@ -11,13 +11,24 @@
         loading = false,
         config = {};
 
-    var HASH_POLLING_INTERVAL = 400,
-        BASE_URL = location.protocol + "//" + location.host + "/",
-        PAGE_KEY = "page";
+    var hashPollingInterval = 400,
+        baseUrl = location.protocol + "//" + location.host + "/",
+        pageKey = "page",
+        shebang = "#";
 
 
     function configure(c) {
         config = c;
+
+        hashPollingInterval = c.hashPollingInterval || hashPollingInterval;
+        baseUrl = c.baseUrl || baseUrl;
+        pageKey = c.pageKey || pageKey;
+        shebang = c.withBang ? "#!" : "#";
+
+        // if start with hash url
+        if ( location.hash.indexOf(createHash()) !== -1 ) {
+            onHashChange();
+        }
 
         if ( config.redirect ) {
             if ( hasPushState && isHashUrl() ) {
@@ -31,6 +42,35 @@
                 location.href = asHashUrl(location.href);
             }
         }
+
+        if ( hasPushState ) {
+            window.addEventListener("popstate", onPopState, false);
+        }
+        else {
+
+            if ( hasOnHashChange ) {
+                window.addEventListener("hashchange", onHashChange, false);
+            }
+            else {
+                setInterval(function() {
+                    if ( location.hash.length > 1 && location.hash !== currentHash ) {
+                        currentHash = location.hash;
+                        onHashChange();
+                    }
+                }, hashPollingInterval);
+            }
+        }
+
+        function onPopState(evt) {
+            if ( currentLocation !== location.href ) {
+                loadPage(location.href, true);
+                currentLocation = location.href;
+            }
+        }
+
+        function onHashChange() {
+            loadPage(asNormalUrl(location.hash));
+        }
     }
 
     function isSSL(url) {
@@ -38,10 +78,10 @@
     }
 
     function isOtherDomain(url) {
-        var hostname = url.split("/")[2];
+        var host = url.split("/")[2];
 
-        if ( hostname ) {
-            return hostname !== location.hostname;
+        if ( host ) {
+            return host !== location.host;
         }
         else {
             return false;
@@ -53,19 +93,30 @@
     }
 
     function asHashUrl(url) {
-        var baseUrl = config.baseUrl || BASE_URL,
-            pageKey = config.pageKey || PAGE_KEY;
-
         if ( url.indexOf("http") === 0 ) {
-            return baseUrl + "#" + pageKey + "=" + url.split("/").slice(3).join("/");
+            return baseUrl + createHash(url.split("/").slice(3).join("/"));
         }
         else {
-            return baseUrl + "#" + pageKey + "=" + url;
+            return baseUrl + createHash(url);
+        }
+    }
+
+    function createHash(url) {
+        if ( config.withOutKey ) {
+            return shebang + (url || "");
+        }
+        else {
+            return shebang + pageKey + "=" + (url || "");
         }
     }
 
     function asNormalUrl(hash) {
-        return location.protocol + "//" + location.host + "/" + hash.substr(hash.indexOf("=") + 1);
+        if ( config.withOutKey ) {
+            return location.protocol + "//" + location.host + "/" + (config.withShebang ? hash.substr(2) : hash.substr(1));
+        }
+        else {
+            return location.protocol + "//" + location.host + "/" + hash.substr(hash.indexOf("=") + 1);
+        }
     }
 
     function next(url, isPopState) {
@@ -138,43 +189,9 @@
         xhr.send();
     }
 
-    function onPopState(evt) {
-        if ( currentLocation !== location.href ) {
-            loadPage(location.href, true);
-            currentLocation = location.href;
-        }
-    }
-
-    function onHashChange() {
-        loadPage(asNormalUrl(location.hash));
-    }
-
     if ( window.hist ) {
         configure(window.hist);
     }
-
-    if ( hasPushState ) {
-        window.addEventListener("popstate", onPopState, false);
-    }
-    else {
-        // if start with hash url
-        if ( location.hash.indexOf("#" + (config.pageKey || PAGE_KEY)  + "=") !== -1 ) {
-            onHashChange();
-        }
-
-        if ( hasOnHashChange ) {
-            window.addEventListener("hashchange", onHashChange, false);
-        }
-        else {
-            setInterval(function() {
-                if ( location.hash && location.hash !== currentHash ) {
-                    currentHash = location.hash;
-                    onHashChange();
-                }
-            }, config.hashPollingInterval || HASH_POLLING_INTERVAL);
-        }
-    }
-
 
     hist.next = next;
     hist.configure = configure;
