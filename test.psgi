@@ -73,7 +73,7 @@ __DATA__
     <script type="text/javascript">
         hist.configure({
             redirect: true,
-            //withOutKey: true,
+            //withoutKey: true,
             withBang: true,
             success: function(data) {
                 document.getElementById("content").innerHTML = data;

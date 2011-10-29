@@ -19,6 +19,8 @@
 
 
     function configure(c) {
+        var isHashUrl = (location.hash.length > 0);
+
         config = c;
 
         hashPollingInterval = c.hashPollingInterval || hashPollingInterval;
@@ -27,18 +29,18 @@
         pageKey = c.pageKey || pageKey;
         shebang = c.withBang ? "#!" : "#";
 
-        // if start with hash url
+        // if visit hash url at first onload
         if ( location.hash.indexOf(createHash()) !== -1 ) {
             onHashChange();
         }
 
         if ( config.redirect ) {
-            if ( hasPushState && isHashUrl() ) {
+            if ( hasPushState && isHashUrl ) {
                 // new browsers which has history.pushState + hash URL
                 // redirect to normal URL
                 location.href = asNormalUrl(location.hash);
             }
-            else if ( ! hasPushState && ! isHashUrl() ) {
+            else if ( ! hasPushState && ! isHashUrl ) {
                 // old browsers not have history.pushState + normal URL
                 // redirect to hash URL
                 location.href = asHashUrl(location.href);
@@ -49,7 +51,6 @@
             window.addEventListener("popstate", onPopState, false);
         }
         else {
-
             if ( hasOnHashChange ) {
                 window.addEventListener("hashchange", onHashChange, false);
             }
@@ -80,9 +81,13 @@
     }
 
     function isOtherDomain(url) {
+        // http://{example.com}/ => split("/")[2]
         var host = url.split("/")[2];
 
-        if ( host ) {
+        if ( url.indexOf("http") !== 0 ) {
+            return false;
+        }
+        else if ( host ) {
             return host !== location.host;
         }
         else {
@@ -90,21 +95,19 @@
         }
     }
 
-    function isHashUrl() {
-        return (location.hash.length > 0);
-    }
-
     function asHashUrl(url) {
+        // with absolute URL, we need http://example.com/{foo/bar}
         if ( url.indexOf("http") === 0 ) {
             return baseUrl + createHash(url.split("/").slice(3).join("/"));
         }
+        // with relative URL, we need URL itself
         else {
             return baseUrl + createHash(url);
         }
     }
 
     function createHash(url) {
-        if ( config.withOutKey ) {
+        if ( config.withoutKey ) {
             return shebang + (url || "");
         }
         else {
@@ -113,10 +116,12 @@
     }
 
     function asNormalUrl(hash) {
-        if ( config.withOutKey ) {
-            return location.protocol + "//" + location.host + "/" + (config.withShebang ? hash.substr(2) : hash.substr(1));
+        if ( config.withoutKey ) {
+            // hash.substr extracts: with bang => #!{foo}, without bang => #{foo}
+            return location.protocol + "//" + location.host + "/" + (config.withBang ? hash.substr(2) : hash.substr(1));
         }
         else {
+            // hash.substr extracts: #key={value}
             return location.protocol + "//" + location.host + "/" + hash.substr(hash.indexOf("=") + 1);
         }
     }
