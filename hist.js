@@ -15,7 +15,7 @@
         baseUrl = location.protocol + "//" + location.host + "/",
         headers  = { "X-Hist-XMLHttpRequest": 1 },
         pageKey = "page",
-        shebang = "#";
+        shebang;
 
 
     function configure(c) {

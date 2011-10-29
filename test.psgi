@@ -3,7 +3,6 @@ use warnings;
 
 use Amon2::Lite;
 use Plack::Builder;
-use JSON;
 
 
 get '/' => sub {
