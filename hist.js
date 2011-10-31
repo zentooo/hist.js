@@ -126,7 +126,7 @@
         }
     }
 
-    function next(url, isPopState) {
+    function next(url) {
         if ( config.ignoreSSL && isSSL(url) ) {
             location.href = url;
         }
@@ -138,7 +138,7 @@
                 location.href = asHashUrl(url);
             }
             else {
-                loadPage(url, isPopState);
+                loadPage(url);
             }
         }
     }

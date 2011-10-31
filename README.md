@@ -54,6 +54,22 @@ or configure after loading
     </script>
 
 
+then, replace links as
+
+    <a onclick="hist.next('http://example.com/foo/bar')">foobar</a>
+
+or
+
+    <a href="http://example.com/foo/bar">foobar</a>
+
+    Array.prototype.forEach.call(document.querySelectorAll("a"), function(el) {
+        el.addEventListener("click", function(evt) {
+            evt.preventDefault();
+            hist.next(evt.target.getAttribute("href"));
+        }, false);
+    });
+
+
 Features
 -------
 
