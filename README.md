@@ -43,13 +43,13 @@ or configure after loading
             error: function(xhr) {
                 // error callback for xhr request
             },
-            hashPollingInterval: 600, // hash polling interval (optional, default: 400)
+            hashPollingInterval: 600,       // hash polling interval (optional, default: 400)
             baseUrl: "http://example.com/", // base url for generating hash url (optional, default: location.protocol + "/" + location.host + "/")
-            headers: { "X-FooBar": 1 }, // request header for xhr (optional, default: { "X-Hist-Request": 1 })
-            pageKey: "p", // key string for hash url (optional, default: "page")
-            withoutKey: false, // flag to omit "key=" of hash url (optional, default: false)
-            withBang: false, // flag to add bang("!") to hash url (optional, default: false)
-            ignoreSSL: true // flag to use normal transition for https:// link (optional, default: false)
+            headers: { "X-FooBar": 1 },     // request header for xhr (optional, default: { "X-Hist-Request": 1 })
+            pageKey: "p",                   // key string for hash url (optional, default: "page")
+            withoutKey: false,              // flag to omit "key=" of hash url (optional, default: false)
+            withBang: false,                // flag to add bang("!") to hash url (optional, default: false)
+            ignoreSSL: true                 // flag to use normal transition for https link (optional, default: false)
         });
     </script>
 
