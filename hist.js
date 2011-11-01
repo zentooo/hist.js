@@ -1,6 +1,4 @@
-/**
- * @fileoverview Ajax history management heloper handling various environments (with pushState / with onhashchange / without both of them)
- */
+/** @license Naosuke Yokoe - http://github.com/zentooo/hist.js - MIT Licensed */
 
 (function() {
     var hist = {},
