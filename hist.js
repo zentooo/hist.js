@@ -187,6 +187,8 @@
         xhr.open("GET", url, true);
 
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+        xhr.setRequestHeader("Pragma", "no-cache");
+        xhr.setRequestHeader("Cache-Control", "no-cache");
         xhr.setRequestHeader("If-Modified-Since", "Thu, 01 Jun 1970 00:00:00 GMT");
 
         for ( key in headers ) {
